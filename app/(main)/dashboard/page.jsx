@@ -16,21 +16,22 @@ import Link from "next/link";
 import { ExpenseSummary } from "./components/expense-summary";
 import { BalanceSummary } from "./components/balance-summary";
 import { GroupList } from "./components/group-list";
+import { useEffect } from "react";
 
 export default function Dashboard() {
-  const { data: balances, isLoading: balancesLoading } = useConvexQuery(
+  const { data: balances, isLoading: balancesLoading, error: balancesError } = useConvexQuery(
     api.dashboard.getUserBalances
   );
 
-  const { data: groups, isLoading: groupsLoading } = useConvexQuery(
+  const { data: groups, isLoading: groupsLoading, error: groupsError } = useConvexQuery(
     api.dashboard.getUserGroups
   );
 
-  const { data: totalSpent, isLoading: totalSpentLoading } = useConvexQuery(
+  const { data: totalSpent, isLoading: totalSpentLoading, error: totalSpentError } = useConvexQuery(
     api.dashboard.getTotalSpent
   );
 
-  const { data: monthlySpending, isLoading: monthlySpendingLoading } =
+  const { data: monthlySpending, isLoading: monthlySpendingLoading, error: monthlySpendingError } =
     useConvexQuery(api.dashboard.getMonthlySpending);
 
   const isLoading =
@@ -38,6 +39,40 @@ export default function Dashboard() {
     groupsLoading ||
     totalSpentLoading ||
     monthlySpendingLoading;
+
+  // Debug logging
+  useEffect(() => {
+    console.log("Dashboard Debug Info:", {
+      balancesLoading,
+      groupsLoading,
+      totalSpentLoading,
+      monthlySpendingLoading,
+      balancesError,
+      groupsError,
+      totalSpentError,
+      monthlySpendingError,
+      balances,
+      groups,
+      totalSpent,
+      monthlySpending
+    });
+  }, [balancesLoading, groupsLoading, totalSpentLoading, monthlySpendingLoading, balancesError, groupsError, totalSpentError, monthlySpendingError, balances, groups, totalSpent, monthlySpending]);
+
+  // Show error if any query fails
+  if (balancesError || groupsError || totalSpentError || monthlySpendingError) {
+    console.error("Dashboard Errors:", { balancesError, groupsError, totalSpentError, monthlySpendingError });
+    return (
+      <div className="container mx-auto py-6">
+        <div className="text-center py-12">
+          <h2 className="text-2xl font-bold text-red-600 mb-4">Error Loading Dashboard</h2>
+          <p className="text-gray-600 mb-4">There was an error loading your dashboard data.</p>
+          <Button onClick={() => window.location.reload()}>
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto py-6 space-y-6">
